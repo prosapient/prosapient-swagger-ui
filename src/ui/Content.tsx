@@ -6,7 +6,7 @@ const StyledContent = styled(Box)`
   code:not(.language-json) {
     color: ${props => props.theme.colors.beta[700]};
     background: ${props => props.theme.colors.beta[200]};
-    padding: ${props => props.theme.newSpace[2]} ${props => props.theme.newSpace[3]};
+    padding: ${props => props.theme.newSpace[1]} ${props => props.theme.newSpace[2]};
     border-radius: 2px;
   }
   pre {

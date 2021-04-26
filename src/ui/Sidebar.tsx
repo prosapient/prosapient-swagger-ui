@@ -1,7 +1,7 @@
 import { FC } from "react"
 import { Box, Text } from "prosapient-styleguide"
 
-export const Sidebar: FC<{ title: string }> = ({ children, title }) => (
+export const Sidebar: FC<{ title: string; version: string }> = ({ children, title, version }) => (
   <Box
     position="fixed"
     top={0}
@@ -14,9 +14,14 @@ export const Sidebar: FC<{ title: string }> = ({ children, title }) => (
     py={7}
     px={8}
   >
-    <Text fontSize={7} mb={11}>
-      {title}
-    </Text>
+    <Box display="flex" justifyContent="space-between">
+      <Text fontSize={7} mb={11}>
+        {title}
+      </Text>
+      <Text fontSize={7} mb={11} color="beta.400">
+        v{version}
+      </Text>
+    </Box>
     <Text fontSize={5}>API Documentation</Text>
     <Text fontSize={7} mb={11}>
       Table of Contents
