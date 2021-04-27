@@ -43,6 +43,7 @@ function generateLinkId(title: string) {
     if (links.indexOf(link) === -1) break
     inc += 1
   }
+  links.push(link)
 
   return link
 }
@@ -123,11 +124,58 @@ function processMainDescription(description: string): ApiChapter[] {
   return chapters
 }
 
+function processEndpoints(spec: any): ApiChapter[] {
+  const md = new MarkdownIt({ breaks: true })
+
+  const chapters = new Map<string, ApiChapter>()
+  function getChapter(title: string, spec: any): ApiChapter {
+    if (!chapters.has(title)) {
+      const tag = spec.tags.find((t: any) => t.name === title)
+      const markdown = tag?.description || ""
+      chapters.set(title, {
+        id: generateLinkId(title),
+        title,
+        content: [{ markdown: md.render(markdown, {}) }],
+        sections: [],
+      })
+    }
+    return chapters.get(title) as ApiChapter
+  }
+
+  const methods = ["get", "put", "post", "delete", "options", "head", "path", "trace"]
+  for (const path in spec.paths) {
+    const config = spec.paths[path]
+    for (const method of methods) {
+      const operation = config[method]
+      if (!operation) continue
+      const tag = operation.tags[0] || ("Rest API" as string)
+      const chapter = getChapter(tag, spec)
+      const title = operation.summary
+      chapter.sections.push({
+        id: generateLinkId(title),
+        title,
+        content: [
+          {
+            markdown: md.render(
+              [operation.description, "**HTTP Request**", `\`${method.toUpperCase()} ${path}\``].join("\n"),
+              {}
+            ),
+          },
+        ],
+      })
+    }
+  }
+
+  return Array.from(chapters.values())
+}
+
 function parseApiSpec(spec: any): ApiDocs {
+  const chapters = processMainDescription(spec.info.description)
+  const endpoints = processEndpoints(spec)
   const docs = {
     title: spec.info.title,
     version: spec.info.version,
-    chapters: processMainDescription(spec.info.description),
+    chapters: chapters.concat(endpoints),
   }
   return docs
 }

@@ -10,7 +10,6 @@ import { Chapter } from "./ui/Chapter"
 import { Paragraph } from "./ui/Paragraph"
 import { Section } from "./ui/Section"
 import { Spacer } from "./ui/Spacer"
-import { Table } from "./ui/Table"
 import { SideCode } from "./ui/SideCode"
 import { Loader } from "./ui/Loader"
 import { useApiDocs } from "./parser/useApiDocs"
@@ -70,34 +69,6 @@ export default function App() {
                   ))}
                 </div>
               ))}
-
-              <Paragraph>
-                So perhaps, you've generated some fancy text, and you're content that you can now copy and paste your
-                fancy text in the comments section of funny cat videos, but perhaps you're wondering how it's even
-                possible to change the font of your text? Is it some sort of hack? Are you{" "}
-                <code>copying and pasting</code> an actual font?
-              </Paragraph>
-              <Table header={["Success Code", "Meaning"]} rows={[["200", "Ok - Request proceeded successfully"]]} />
-              <Spacer />
-              <Section>Making request</Section>
-              <Paragraph>
-                So perhaps, you've generated some fancy text, and you're content that you can now copy and paste your
-                fancy text in the comments section of funny cat videos, but perhaps you're wondering how it's even
-                possible to change the font of your text? Is it some sort of hack? Are you{" "}
-                <code>copying and pasting</code> an actual font?
-              </Paragraph>
-              <SideCode title="Example JSON" code={JSON.stringify({ testing: "module" }, null, 2)} />
-              <Spacer />
-              <Table
-                header={["Field", "Type", "Description"]}
-                rows={[
-                  ["start_date", "datetime", "A system generated ID number assigned to the recepient"],
-                  ["start_date", "datetime", "A system generated ID number assigned to the recepient"],
-                  ["start_date", "datetime", "A system generated ID number assigned to the recepient"],
-                  ["start_date", "datetime", "A system generated ID number assigned to the recepient"],
-                  ["start_date", "datetime", "A system generated ID number assigned to the recepient"],
-                ]}
-              />
               <Spacer />
             </Content>
           </>
