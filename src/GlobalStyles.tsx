@@ -8,4 +8,17 @@ export const GlobalStyles = createGlobalStyle<ThemeProps<ThemeInterface>>`
 	body, #root {
 	 height: 100vh;
 	}
+
+	html {
+		scroll-behavior: smooth;
+	}
+
+	a {
+		transition: all 150ms ease;
+		border-bottom: 2px solid transparent;
+	}
+
+	a:hover {
+		border-bottom: 2px solid ${props => props.theme.colors.beta[500]};
+	}
 `

@@ -5,6 +5,7 @@ import MarkdownIt from "markdown-it"
 const links = [] as string[]
 
 interface Content {
+  title?: string
   code?: string
   markdown?: string
 }
@@ -19,7 +20,8 @@ interface ApiChapter {
   content: Content[]
   sections: ApiSection[]
 }
-interface ApiDocs {
+
+export interface ApiDocs {
   title: string
   version: string
   chapters: ApiChapter[]
@@ -68,16 +70,18 @@ function processMainDescription(description: string): ApiChapter[] {
     markdown = null
   }
 
-  function finishCode() {
+  function finishCode(title: string) {
     if (!code) return
     code = code.trim()
     if (section) {
-      section.content.push({ code })
+      section.content.splice(section.content.length - 1, 0, { code, title })
     } else if (chapter) {
-      chapter.content.push({ code })
+      chapter.content.splice(chapter.content.length - 1, 0, { code, title })
     }
     code = null
   }
+
+  let codeTitle = ""
 
   while (lines.length) {
     const line = lines.shift() || ""
@@ -92,6 +96,7 @@ function processMainDescription(description: string): ApiChapter[] {
         sections: [] as ApiSection[],
       }
       markdown = ""
+      section = null
       chapters.push(chapter)
       continue
     }
@@ -108,9 +113,10 @@ function processMainDescription(description: string): ApiChapter[] {
     }
 
     if (line.match(/^```/)) {
-      if (code) finishCode()
+      if (code) finishCode(codeTitle)
       else {
         finishMardown()
+        codeTitle = line.replace(/```\w*\s*/, "")
         code = (lines.shift() || "") + "\n"
       }
     } else if (code) {
@@ -121,7 +127,71 @@ function processMainDescription(description: string): ApiChapter[] {
       markdown = `${line}\n`
     }
   }
+
+  finishMardown()
+
   return chapters
+}
+
+function findSchema(path: string, spec: any): object {
+  const name = path.split("/").pop()
+  return name && spec.components.schemas[name]
+}
+
+function fieldsTable(fields: any, required: string[]): string {
+  const rows = []
+  for (const field in fields) {
+    const config = fields[field]
+    const req = required.indexOf(field) > -1 ? ", required" : ""
+    rows.push(`| ${field} | ${config.type}${req} | ${config.description} |`)
+  }
+
+  return ["| Field | Type | Description |", "| --- | --- | --- |", ...rows].join("\n")
+}
+
+function parseSimpleMarkdown(text: string): Content[] {
+  const md = new MarkdownIt({ breaks: true })
+  const lines = text.split(/\n/)
+  const content = [] as Content[]
+  let markdown = null as string | null
+  let code = null as string | null
+
+  function finishMardown() {
+    if (!markdown) return
+    markdown = md.render(markdown as string, {})
+    content.push({ markdown })
+    markdown = null
+  }
+
+  function finishCode(title: string) {
+    if (!code) return
+    content.splice(content.length - 1, 0, { code, title })
+    code = null
+  }
+
+  let codeTitle = ""
+
+  while (lines.length) {
+    const line = lines.shift() || ""
+
+    if (line.match(/^```/)) {
+      if (code) finishCode(codeTitle)
+      else {
+        finishMardown()
+        codeTitle = line.replace(/```\w*\s*/, "").trim()
+        code = (lines.shift() || "") + "\n"
+      }
+    } else if (code) {
+      code = `${code}${line}\n`
+    } else if (markdown) {
+      markdown = `${markdown}${line}\n`
+    } else {
+      markdown = `${line}\n`
+    }
+  }
+
+  finishMardown()
+  return content
 }
 
 function processEndpoints(spec: any): ApiChapter[] {
@@ -135,7 +205,7 @@ function processEndpoints(spec: any): ApiChapter[] {
       chapters.set(title, {
         id: generateLinkId(title),
         title,
-        content: [{ markdown: md.render(markdown, {}) }],
+        content: parseSimpleMarkdown(markdown),
         sections: [],
       })
     }
@@ -151,17 +221,68 @@ function processEndpoints(spec: any): ApiChapter[] {
       const tag = operation.tags[0] || ("Rest API" as string)
       const chapter = getChapter(tag, spec)
       const title = operation.summary
+      const requestBodyContent = operation.requestBody?.content || {}
+      const requestType = Object.keys(requestBodyContent as object)[0]
+      const requestBody = Object.values(requestBodyContent as object)[0]?.schema
+      const requestSchema = requestBody?.$ref ? findSchema(requestBody.$ref, spec) : requestBody
+
+      const content = [
+        {
+          markdown: md.render(
+            [
+              operation.description,
+              `**HTTP Request (${requestType || "application/json"})**`,
+              `\`${method.toUpperCase()} ${path}\``,
+            ].join("\n"),
+            {}
+          ),
+        },
+        requestSchema &&
+          requestSchema.example && {
+            title: "Request example",
+            code: JSON.stringify(requestSchema.example, null, 2),
+          },
+        requestSchema && {
+          markdown: md.render(
+            [
+              `**${operation.requestBody.description}**`,
+              fieldsTable(requestSchema.properties, requestSchema.required),
+            ].join("\n"),
+            {}
+          ),
+        },
+      ].filter(c => !!c)
+
+      for (const status in operation.responses) {
+        const response = operation.responses[status]
+        const responseContent = response.content || {}
+        const responseBody = Object.values(responseContent as object)[0]?.schema
+        const responseSchema = responseBody?.$ref ? findSchema(responseBody.$ref, spec) : responseBody
+
+        if (responseSchema?.example) {
+          content.push({
+            title: `Response example (${status})`,
+            code: JSON.stringify(responseSchema.example, null, 2),
+          })
+        }
+
+        content.push({
+          markdown: md.render(
+            [
+              `**Response (${status}: ${response.description})**`,
+              responseSchema?.properties
+                ? fieldsTable(responseSchema.properties, responseSchema.required || [])
+                : "Response without content",
+            ].join("\n"),
+            {}
+          ),
+        })
+      }
+
       chapter.sections.push({
         id: generateLinkId(title),
         title,
-        content: [
-          {
-            markdown: md.render(
-              [operation.description, "**HTTP Request**", `\`${method.toUpperCase()} ${path}\``].join("\n"),
-              {}
-            ),
-          },
-        ],
+        content,
       })
     }
   }
@@ -180,10 +301,11 @@ function parseApiSpec(spec: any): ApiDocs {
   return docs
 }
 
-export const useApiDocs = (url: string) => {
+export const useApiDocs = (url: string | null | undefined) => {
   const [docs, setDocs] = useState<ApiDocs | null>(null)
 
   useEffect(() => {
+    if (!url) return
     ;(async function () {
       const api = await parseSwaggerApi(url)
       setDocs(parseApiSpec(api))
