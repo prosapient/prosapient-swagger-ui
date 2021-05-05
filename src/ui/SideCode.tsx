@@ -1,8 +1,11 @@
 import { useState, useCallback } from "react"
-import SyntaxHighlighter from "react-syntax-highlighter"
-import { gruvboxDark } from "react-syntax-highlighter/dist/esm/styles/hljs"
 import copy from "copy-to-clipboard"
+import { Light as SyntaxHighlighter } from "react-syntax-highlighter"
+import json from "react-syntax-highlighter/dist/esm/languages/hljs/json"
+import { gruvboxDark } from "react-syntax-highlighter/dist/esm/styles/hljs"
 import { Box, Text, Button, FIcon } from "prosapient-styleguide"
+
+SyntaxHighlighter.registerLanguage("json", json)
 
 export const SideCode = ({ title, code }: { title?: string; code: string }) => {
   const [copied, setCopied] = useState<boolean>(false)
