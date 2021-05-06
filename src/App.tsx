@@ -14,6 +14,8 @@ import { Loader } from "./ui/Loader"
 import { Navigator } from "./ui/Navigator"
 import { useApiDocs } from "./parser/useApiDocs"
 
+const theme = { ...prosapientTheme, breakpoints: ["80em"] }
+
 const SPEC_URL = document.querySelector('meta[name="api-spec-url"]')?.getAttribute("content")
 
 export default function App() {
@@ -26,7 +28,7 @@ export default function App() {
   }, [docs])
 
   return (
-    <ThemeProvider theme={prosapientTheme}>
+    <ThemeProvider theme={theme}>
       <Normalize />
       <GlobalStyles />
       {!docs && <Loader />}

@@ -10307,10 +10307,10 @@ property-information@^5.0.0:
   dependencies:
     xtend "^4.0.0"
 
-prosapient-styleguide@^0.2.48:
-  version "0.2.48"
-  resolved "https://npm.prosapient.com/prosapient-styleguide/-/prosapient-styleguide-0.2.48.tgz#f759b618b1f018bad03b6bef9c621967f3c35b66"
-  integrity sha512-tqPJIcyPDfuDE7GJiLWxrLjxqssMyZFDetgxTwhG9CdCw/qNLi/98DBm9W5YJPK1Q/76m4+mMxqu9W9GsCE8eQ==
+prosapient-styleguide@^0.2.49:
+  version "0.2.49"
+  resolved "https://npm.prosapient.com/prosapient-styleguide/-/prosapient-styleguide-0.2.49.tgz#63c172615e084ab8afe3ba0dfe220e9f9cd78284"
+  integrity sha512-f1aX3e0/S0Fm2EMKWJ/bWa3SKVeu9BGNnNTeqSiZgvV7GoQb6zloCRBr0YyUctl/xc5EEyKkFZE8lMe0vBJahw==
   dependencies:
     "@fortawesome/fontawesome-svg-core" "1.2.32"
     "@fortawesome/free-solid-svg-icons" "5.15.1"

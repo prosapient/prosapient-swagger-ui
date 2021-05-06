@@ -11,6 +11,10 @@ const StyledMardown = styled(Box)`
     margin-bottom: ${props => props.theme.newSpace[6]};
   }
 
+  a {
+    border-bottom: 2px solid ${props => props.theme.colors.beta[500]};
+  }
+
   table {
     width: 100%;
     text-align: left;

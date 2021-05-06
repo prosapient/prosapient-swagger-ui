@@ -17,7 +17,7 @@ const StyledContent = styled(Box)`
 `
 
 export const Content: FC = ({ children }) => (
-  <Box ml={230} position="relative" zIndex={10} minHeight="100%">
+  <Box ml={[0, 230]} position="relative" zIndex={10} minHeight="100%" bg="white">
     <StyledContent position="relative" zIndex={30} width="100%">
       {children}
     </StyledContent>
