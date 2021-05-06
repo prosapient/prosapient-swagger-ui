@@ -14,7 +14,7 @@ import { Loader } from "./ui/Loader"
 import { Navigator } from "./ui/Navigator"
 import { useApiDocs } from "./parser/useApiDocs"
 
-const theme = { ...prosapientTheme, breakpoints: ["80em"] }
+const theme = { ...prosapientTheme, breakpoints: ["90em"] }
 
 const SPEC_URL = document.querySelector('meta[name="api-spec-url"]')?.getAttribute("content")
 
