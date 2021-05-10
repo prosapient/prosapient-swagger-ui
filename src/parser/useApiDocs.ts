@@ -197,19 +197,19 @@ function parseSimpleMarkdown(text: string): Content[] {
 function processEndpoints(spec: any): ApiChapter[] {
   const md = new MarkdownIt({ breaks: true })
 
-  const chapters = new Map<string, ApiChapter>()
-  function getChapter(title: string, spec: any): ApiChapter {
-    if (!chapters.has(title)) {
+  const chapters = [] as ApiChapter[]
+  function getChapter(index: number, title: string, spec: any): ApiChapter {
+    if (!chapters[index]) {
       const tag = spec.tags.find((t: any) => t.name === title)
       const markdown = tag?.description || ""
-      chapters.set(title, {
+      chapters[index] = {
         id: generateLinkId(title),
         title,
         content: parseSimpleMarkdown(markdown),
         sections: [],
-      })
+      }
     }
-    return chapters.get(title) as ApiChapter
+    return chapters[index] as ApiChapter
   }
 
   const methods = ["get", "put", "post", "delete", "options", "head", "path", "trace"]
@@ -219,7 +219,8 @@ function processEndpoints(spec: any): ApiChapter[] {
       const operation = config[method]
       if (!operation) continue
       const tag = operation.tags[0] || ("Rest API" as string)
-      const chapter = getChapter(tag, spec)
+      const index = operation.tags[1] || spec.tags.map((t: any) => t.name).indexOf(tag)
+      const chapter = getChapter(index > -1 ? index : 0, tag, spec)
       const title = operation.summary
       const requestBodyContent = operation.requestBody?.content || {}
       const requestType = Object.keys(requestBodyContent as object)[0]
@@ -287,7 +288,7 @@ function processEndpoints(spec: any): ApiChapter[] {
     }
   }
 
-  return Array.from(chapters.values())
+  return chapters
 }
 
 function parseApiSpec(spec: any): ApiDocs {
