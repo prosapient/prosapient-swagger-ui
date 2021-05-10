@@ -219,7 +219,8 @@ function processEndpoints(spec: any): ApiChapter[] {
       const operation = config[method]
       if (!operation) continue
       const tag = operation.tags[0] || ("Rest API" as string)
-      const index = operation.tags[1] || spec.tags.map((t: any) => t.name).indexOf(tag)
+      const index = operation.tags[1] ?? spec.tags.map((t: any) => t.name).indexOf(tag)
+      console.log([tag, index])
       const chapter = getChapter(index > -1 ? index : 0, tag, spec)
       const title = operation.summary
       const requestBodyContent = operation.requestBody?.content || {}
